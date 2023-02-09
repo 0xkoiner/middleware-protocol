@@ -17,7 +17,4 @@ interface ILendingPool {
     function initReserve(ReserveConfig calldata _config) external;
     function getReserveData(address _asset) external view returns (ReserveData memory);
     function getUserHealthFactor(address _user) external view returns (uint256);
-    function getUserDeposit(address _user, address _asset) external view returns (uint256);
-    function getUserBorrow(address _user, address _asset) external view returns (uint256);
-    function getReserveAssets() external view returns (address[] memory);
 }
