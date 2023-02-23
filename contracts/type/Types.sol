@@ -22,6 +22,15 @@ struct UserReserveData {
     uint256 borrowShares;
 }
 
+/// @notice Parameters for initializing a new reserve
+struct ReserveConfig {
+    address asset;
+    uint16 reserveFactorBps;
+    uint16 liquidationThresholdBps;
+    uint16 liquidationBonusBps;
+    uint16 ltvBps;
+}
+
 library Constants {
     uint256 constant WAD = 1e18;
     uint256 constant RAY = 1e27;
