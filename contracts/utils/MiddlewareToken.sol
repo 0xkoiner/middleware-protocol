@@ -18,9 +18,6 @@ contract MiddlewareToken is IMiddlewareToken {
     mapping(address => uint256) public balanceOf;
     mapping(address => mapping(address => uint256)) public allowance;
 
-    event Transfer(address indexed from, address indexed to, uint256 amount);
-    event Approval(address indexed owner, address indexed spender, uint256 amount);
-
     modifier onlyPool() {
         if (msg.sender != pool) revert NotOwner();
         _;
@@ -41,25 +38,21 @@ contract MiddlewareToken is IMiddlewareToken {
     function mint(address _to, uint256 _amount) external onlyPool {
         totalSupply += _amount;
         balanceOf[_to] += _amount;
-        emit Transfer(address(0), _to, _amount);
     }
 
     function burn(address _from, uint256 _amount) external onlyPool {
         balanceOf[_from] -= _amount;
         totalSupply -= _amount;
-        emit Transfer(_from, address(0), _amount);
     }
 
     function transfer(address _to, uint256 _amount) external returns (bool) {
         balanceOf[msg.sender] -= _amount;
         balanceOf[_to] += _amount;
-        emit Transfer(msg.sender, _to, _amount);
         return true;
     }
 
     function approve(address _spender, uint256 _amount) external returns (bool) {
         allowance[msg.sender][_spender] = _amount;
-        emit Approval(msg.sender, _spender, _amount);
         return true;
     }
 
@@ -73,7 +66,6 @@ contract MiddlewareToken is IMiddlewareToken {
         }
         balanceOf[_from] -= _amount;
         balanceOf[_to] += _amount;
-        emit Transfer(_from, _to, _amount);
         return true;
     }
 }
