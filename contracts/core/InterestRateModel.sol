@@ -27,6 +27,7 @@ contract InterestRateModel is IInterestRateModel {
         slope2 = _slope2;
     }
 
+    /// @notice Calculate liquidity and borrow rates based on utilization
     function calculateRates(
         uint256 _totalDeposits,
         uint256 _totalBorrows,
@@ -46,11 +47,21 @@ contract InterestRateModel is IInterestRateModel {
         liquidityRate = borrowRate.rayMul(utilization).rayMul(Constants.RAY - reserveFactor);
     }
 
+    /// @notice Utilization = totalBorrows / totalDeposits (in RAY)
     function getUtilizationRate(
         uint256 _totalDeposits,
         uint256 _totalBorrows
     ) public pure returns (uint256) {
         if (_totalDeposits == 0) return 0;
         return _totalBorrows.rayDiv(_totalDeposits);
+    }
+
+    /// @notice Return model parameters
+    function getModelParams()
+        external
+        view
+        returns (uint256, uint256, uint256, uint256)
+    {
+        return (optimalUtilization, baseRate, slope1, slope2);
     }
 }
