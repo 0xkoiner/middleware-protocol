@@ -10,6 +10,8 @@ contract PriceOracle is IPriceOracle {
     address public owner;
     mapping(address => uint256) private _prices;
 
+    event PriceUpdated(address indexed asset, uint256 price);
+
     modifier onlyOwner() {
         if (msg.sender != owner) revert NotOwner();
         _;
@@ -27,5 +29,11 @@ contract PriceOracle is IPriceOracle {
         if (_asset == address(0)) revert ZeroAddress();
         if (_price == 0) revert ZeroAmount();
         _prices[_asset] = _price;
+        emit PriceUpdated(_asset, _price);
+    }
+
+    function transferOwnership(address _newOwner) external onlyOwner {
+        if (_newOwner == address(0)) revert ZeroAddress();
+        owner = _newOwner;
     }
 }
