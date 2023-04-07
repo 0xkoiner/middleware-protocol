@@ -46,6 +46,8 @@ abstract contract BorrowLogic is DepositLogic {
         ReserveData storage reserve = _reserves[_asset];
         UserReserveData storage userData = _userReserves[msg.sender][_asset];
 
+        if (userData.borrowShares == 0) revert ZeroAmount();
+
         reserve.updateState(
             interestRateModel, _getTotalDeposits(_asset), _totalBorrowAmounts[_asset], _asset
         );
@@ -54,10 +56,14 @@ abstract contract BorrowLogic is DepositLogic {
         uint256 userDebt = userData.borrowShares.rayMul(normalizedDebt);
         uint256 repayAmount = _amount == type(uint256).max ? userDebt : MathLib.min(_amount, userDebt);
 
+        if (repayAmount == 0) revert ZeroAmount();
+
         uint256 sharesToRepay = repayAmount.rayDiv(normalizedDebt);
         userData.borrowShares -= sharesToRepay;
         _totalBorrowShares[_asset] -= sharesToRepay;
-        _totalBorrowAmounts[_asset] -= MathLib.min(repayAmount, _totalBorrowAmounts[_asset]);
+
+        uint256 borrowDecrease = MathLib.min(repayAmount, _totalBorrowAmounts[_asset]);
+        _totalBorrowAmounts[_asset] -= borrowDecrease;
 
         IERC20(_asset).transferFrom(msg.sender, address(this), repayAmount);
 
