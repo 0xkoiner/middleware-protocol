@@ -47,18 +47,20 @@ abstract contract LiquidationLogic is BorrowLogic {
             _debtAsset
         );
 
+        // Calculate max liquidatable debt (close factor)
         UserReserveData storage debtUserData = _userReserves[_user][_debtAsset];
         uint256 userDebt = debtUserData.borrowShares.rayMul(debtReserve.getNormalizedDebt());
         uint256 maxDebt = userDebt * CLOSE_FACTOR_BPS / Constants.BPS;
         uint256 actualDebt = MathLib.min(_debtToCover, maxDebt);
 
+        // Calculate collateral to seize (with bonus)
         uint256 collateralPrice = priceOracle.getAssetPrice(_collateralAsset);
         uint256 debtPrice = priceOracle.getAssetPrice(_debtAsset);
         uint256 collateralAmount = (actualDebt * debtPrice) / collateralPrice;
         uint256 bonus = collateralAmount * collateralReserve.liquidationBonusBps / Constants.BPS;
         uint256 totalSeize = collateralAmount + bonus;
 
-        // Update debt
+        // Reduce debt
         uint256 debtShares = actualDebt.rayDiv(debtReserve.getNormalizedDebt());
         debtUserData.borrowShares -= debtShares;
         _totalBorrowShares[_debtAsset] -= debtShares;
@@ -70,6 +72,7 @@ abstract contract LiquidationLogic is BorrowLogic {
         collateralUserData.depositShares -= collateralShares;
         IMiddlewareToken(collateralReserve.mTokenAddress).burn(_user, collateralShares);
 
+        // Transfer
         IERC20(_debtAsset).transferFrom(msg.sender, address(this), actualDebt);
         IERC20(_collateralAsset).transfer(msg.sender, totalSeize);
 
@@ -79,9 +82,8 @@ abstract contract LiquidationLogic is BorrowLogic {
     function _calculateHealthFactor(address _user) internal view returns (uint256) {
         uint256 totalCollateralValue;
         uint256 totalBorrowValue;
-        uint256 len = _reserveAssets.length;
 
-        for (uint256 i; i < len;) {
+        for (uint256 i; i < _reserveAssets.length;) {
             address asset = _reserveAssets[i];
             ReserveData storage reserve = _reserves[asset];
             UserReserveData storage userData = _userReserves[_user][asset];
