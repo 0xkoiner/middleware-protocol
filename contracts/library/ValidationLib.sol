@@ -43,4 +43,16 @@ library ValidationLib {
             revert HealthFactorAboveThreshold();
         }
     }
+
+    function validateInitReserve(
+        ReserveData storage _reserve,
+        address _asset,
+        uint16 _ltvBps,
+        uint16 _liquidationThresholdBps
+    ) internal view {
+        if (_asset == address(0)) revert ZeroAddress();
+        if (_reserve.isActive) revert ReserveAlreadyExists();
+        if (_ltvBps > _liquidationThresholdBps) revert InvalidParameter();
+        if (_liquidationThresholdBps > uint16(Constants.BPS)) revert InvalidParameter();
+    }
 }
