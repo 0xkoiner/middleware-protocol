@@ -25,7 +25,8 @@ abstract contract DepositLogic is LendingPoolStorage {
             interestRateModel, _getTotalDeposits(_asset), _getTotalBorrows(_asset), _asset
         );
 
-        uint256 shares = _amount.rayDiv(reserve.getNormalizedIncome());
+        uint256 normalizedIncome = reserve.getNormalizedIncome();
+        uint256 shares = _amount.rayDiv(normalizedIncome);
         _userReserves[msg.sender][_asset].depositShares += shares;
 
         IMiddlewareToken(reserve.mTokenAddress).mint(msg.sender, shares);
@@ -46,12 +47,16 @@ abstract contract DepositLogic is LendingPoolStorage {
             interestRateModel, _getTotalDeposits(_asset), _getTotalBorrows(_asset), _asset
         );
 
-        uint256 userDeposit = userData.depositShares.rayMul(reserve.getNormalizedIncome());
+        uint256 normalizedIncome = reserve.getNormalizedIncome();
+        uint256 userDeposit = userData.depositShares.rayMul(normalizedIncome);
         uint256 toWithdraw = _amount == type(uint256).max ? userDeposit : _amount;
 
         ValidationLib.validateWithdraw(reserve, toWithdraw, userDeposit);
 
-        uint256 sharesToBurn = toWithdraw.rayDiv(reserve.getNormalizedIncome());
+        uint256 sharesToBurn = toWithdraw.rayDiv(normalizedIncome);
+        if (sharesToBurn > userData.depositShares) {
+            sharesToBurn = userData.depositShares;
+        }
         userData.depositShares -= sharesToBurn;
 
         IMiddlewareToken(reserve.mTokenAddress).burn(msg.sender, sharesToBurn);
