@@ -5,10 +5,8 @@ import {LiquidationLogic} from "./LiquidationLogic.sol";
 import {ILendingPool} from "../interface/ILendingPool.sol";
 import {IInterestRateModel} from "../interface/IInterestRateModel.sol";
 import {IPriceOracle} from "../interface/IPriceOracle.sol";
-import {ReserveData, UserReserveData, ReserveConfig, Constants} from "../type/Types.sol";
+import {ReserveData, ReserveConfig, Constants} from "../type/Types.sol";
 import {ValidationLib} from "../library/ValidationLib.sol";
-import {ReserveLib} from "../library/ReserveLib.sol";
-import {MathLib} from "../library/MathLib.sol";
 import {MiddlewareToken} from "../utils/MiddlewareToken.sol";
 import {IERC20} from "../interface/IERC20.sol";
 import "../type/Errors.sol";
@@ -17,9 +15,6 @@ import "../type/Events.sol";
 /// @title LendingPool
 /// @notice Main entry point for the Middleware lending protocol
 contract LendingPool is ILendingPool, LiquidationLogic {
-    using MathLib for uint256;
-    using ReserveLib for ReserveData;
-
     constructor(address _interestRateModel, address _priceOracle) {
         if (_interestRateModel == address(0)) revert ZeroAddress();
         if (_priceOracle == address(0)) revert ZeroAddress();
@@ -90,8 +85,6 @@ contract LendingPool is ILendingPool, LiquidationLogic {
         emit ReserveInitialized(_config.asset, address(mToken));
     }
 
-    // ---- View functions ----
-
     function getReserveData(address _asset) external view returns (ReserveData memory) {
         return _reserves[_asset];
     }
@@ -103,20 +96,6 @@ contract LendingPool is ILendingPool, LiquidationLogic {
     function getReserveAssets() external view returns (address[] memory) {
         return _reserveAssets;
     }
-
-    function getUserDeposit(address _user, address _asset) external view returns (uint256) {
-        UserReserveData storage userData = _userReserves[_user][_asset];
-        if (userData.depositShares == 0) return 0;
-        return userData.depositShares.rayMul(_reserves[_asset].getNormalizedIncome());
-    }
-
-    function getUserBorrow(address _user, address _asset) external view returns (uint256) {
-        UserReserveData storage userData = _userReserves[_user][_asset];
-        if (userData.borrowShares == 0) return 0;
-        return userData.borrowShares.rayMul(_reserves[_asset].getNormalizedDebt());
-    }
-
-    // ---- Internal ----
 
     function _validateHealthAfterAction(address _user) private view {
         uint256 hf = _calculateHealthFactor(_user);
