@@ -3,11 +3,21 @@ solc = "0.8.19"
 src = "contracts"
 out = "out"
 libs = ["lib"]
+optimizer = true
+optimizer_runs = 1000000
+
+remappings = [
+    "forge-std/=lib/forge-std/src/",
+]
 
 [profile.ci]
 solc = "0.8.19"
 src = "contracts"
 out = "out"
 libs = ["lib"]
+optimizer = true
+optimizer_runs = 1000000
 
-# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+remappings = [
+    "forge-std/=lib/forge-std/src/",
+]
