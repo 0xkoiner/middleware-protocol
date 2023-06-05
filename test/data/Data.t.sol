@@ -9,7 +9,6 @@ import {ReserveConfig} from "../../contracts/type/Types.sol";
 import {TestConstants} from "./Constants.sol";
 import {ERC20Mock} from "../helpers/ERC20Mock.sol";
 
-/// @notice Base test contract with shared setup
 abstract contract TestData is Test {
     LendingPool internal pool;
     InterestRateModel internal rateModel;
@@ -41,12 +40,6 @@ abstract contract TestData is Test {
         oracle.setAssetPrice(address(tokenA), TestConstants.TOKEN_A_PRICE);
         oracle.setAssetPrice(address(tokenB), TestConstants.TOKEN_B_PRICE);
 
-        _initReserves();
-
-        vm.stopPrank();
-    }
-
-    function _initReserves() private {
         pool.initReserve(
             ReserveConfig({
                 asset: address(tokenA),
@@ -66,5 +59,7 @@ abstract contract TestData is Test {
                 ltvBps: TestConstants.LTV
             })
         );
+
+        vm.stopPrank();
     }
 }
