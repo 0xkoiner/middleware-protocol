@@ -6,15 +6,24 @@ import {Constants} from "../type/Types.sol";
 import {MathLib} from "../library/MathLib.sol";
 
 /// @title InterestRateModel
+/// @author openfort@0xkoiner
 /// @notice Two-slope utilization-based interest rate model
 contract InterestRateModel is IInterestRateModel {
     using MathLib for uint256;
 
+    /// @dev Target utilization ratio (RAY)
     uint256 public immutable optimalUtilization;
+    /// @dev Base borrow rate (RAY)
     uint256 public immutable baseRate;
+    /// @dev Rate slope below optimal utilization (RAY)
     uint256 public immutable slope1;
+    /// @dev Rate slope above optimal utilization (RAY)
     uint256 public immutable slope2;
 
+    /// @param _optimalUtilization - Target utilization in RAY
+    /// @param _baseRate - Base borrow rate in RAY
+    /// @param _slope1 - Slope below optimal in RAY
+    /// @param _slope2 - Slope above optimal in RAY
     constructor(
         uint256 _optimalUtilization,
         uint256 _baseRate,
@@ -28,6 +37,11 @@ contract InterestRateModel is IInterestRateModel {
     }
 
     /// @notice Calculate liquidity and borrow rates based on utilization
+    /// @param _totalDeposits - Total deposits in the reserve
+    /// @param _totalBorrows - Total borrows from the reserve
+    /// @param _reserveFactorBps - Reserve factor in basis points
+    /// @return liquidityRate Liquidity rate in RAY
+    /// @return borrowRate Borrow rate in RAY
     function calculateRates(
         uint256 _totalDeposits,
         uint256 _totalBorrows,
@@ -48,6 +62,9 @@ contract InterestRateModel is IInterestRateModel {
     }
 
     /// @notice Utilization = totalBorrows / totalDeposits (in RAY)
+    /// @param _totalDeposits - Total deposits in the reserve
+    /// @param _totalBorrows - Total borrows from the reserve
+    /// @return Utilization rate in RAY
     function getUtilizationRate(
         uint256 _totalDeposits,
         uint256 _totalBorrows
@@ -57,6 +74,7 @@ contract InterestRateModel is IInterestRateModel {
     }
 
     /// @notice Return model parameters
+    /// @return Optimal utilization, base rate, slope1, slope2
     function getModelParams()
         external
         view
