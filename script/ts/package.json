@@ -1,0 +1,19 @@
+{
+  "name": "middleware-scripts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "read-reserve": "tsx readReserve.ts",
+    "deposit": "tsx deposit.ts",
+    "borrow": "tsx borrow.ts",
+    "health": "tsx healthFactor.ts",
+    "repay": "tsx repay.ts",
+    "liquidate": "tsx liquidate.ts"
+  },
+  "dependencies": {
+    "viem": "^1.16.0"
+  },
+  "devDependencies": {
+    "tsx": "^3.13.0"
+  }
+}
