@@ -12,11 +12,16 @@ import "../type/Errors.sol";
 import "../type/Events.sol";
 
 /// @title DepositLogic
+/// @author openfort@0xkoiner
 /// @notice Deposit and withdraw operations
 abstract contract DepositLogic is LendingPoolStorage {
     using MathLib for uint256;
     using ReserveLib for ReserveData;
 
+    /// @notice Deposit assets into a reserve
+    /// @dev Mints mTokens proportional to the current normalized income
+    /// @param _asset - Address of the asset to deposit
+    /// @param _amount - Amount to deposit
     function _deposit(address _asset, uint256 _amount) internal {
         ReserveData storage reserve = _reserves[_asset];
         ValidationLib.validateDeposit(reserve, _amount);
@@ -39,6 +44,10 @@ abstract contract DepositLogic is LendingPoolStorage {
         emit Deposit(_asset, msg.sender, _amount);
     }
 
+    /// @notice Withdraw assets from a reserve
+    /// @dev Burns mTokens and transfers the underlying asset back
+    /// @param _asset - Address of the asset to withdraw
+    /// @param _amount - Amount to withdraw (type(uint256).max for full balance)
     function _withdraw(address _asset, uint256 _amount) internal {
         ReserveData storage reserve = _reserves[_asset];
         UserReserveData storage userData = _userReserves[msg.sender][_asset];
@@ -69,9 +78,11 @@ abstract contract DepositLogic is LendingPoolStorage {
         emit Withdraw(_asset, msg.sender, toWithdraw);
     }
 
+    /// @dev Get total liquidity held by the pool for an asset
     function _getTotalDeposits(address _asset) internal view returns (uint256) {
         return IERC20(_asset).balanceOf(address(this));
     }
 
+    /// @dev Get total borrows for an asset
     function _getTotalBorrows(address _asset) internal view virtual returns (uint256);
 }
