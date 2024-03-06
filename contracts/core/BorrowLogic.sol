@@ -11,6 +11,7 @@ import "../type/Errors.sol";
 import "../type/Events.sol";
 
 /// @title BorrowLogic
+/// @author openfort@0xkoiner
 /// @notice Borrow and repay operations
 abstract contract BorrowLogic is DepositLogic {
     using MathLib for uint256;
@@ -19,6 +20,10 @@ abstract contract BorrowLogic is DepositLogic {
     mapping(address => uint256) internal _totalBorrowShares;
     mapping(address => uint256) internal _totalBorrowAmounts;
 
+    /// @notice Borrow assets from a reserve
+    /// @dev Caller must have sufficient collateral to cover the borrow
+    /// @param _asset - Address of the asset to borrow
+    /// @param _amount - Amount to borrow
     function _borrow(address _asset, uint256 _amount) internal {
         ReserveData storage reserve = _reserves[_asset];
         uint256 available = IERC20(_asset).balanceOf(address(this));
@@ -42,6 +47,11 @@ abstract contract BorrowLogic is DepositLogic {
         emit Borrow(_asset, msg.sender, _amount);
     }
 
+    /// @notice Repay borrowed assets
+    /// @dev Pass type(uint256).max to repay the full outstanding debt
+    /// @param _asset - Address of the asset to repay
+    /// @param _amount - Amount to repay
+    /// @return repayAmount Actual amount repaid
     function _repay(address _asset, uint256 _amount) internal returns (uint256) {
         ReserveData storage reserve = _reserves[_asset];
         UserReserveData storage userData = _userReserves[msg.sender][_asset];
@@ -75,6 +85,7 @@ abstract contract BorrowLogic is DepositLogic {
         return repayAmount;
     }
 
+    /// @dev Get total borrows for an asset
     function _getTotalBorrows(address _asset) internal view override returns (uint256) {
         return _totalBorrowAmounts[_asset];
     }
