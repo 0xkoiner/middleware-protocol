@@ -12,6 +12,7 @@ import "../type/Errors.sol";
 import "../type/Events.sol";
 
 /// @title LiquidationLogic
+/// @author openfort@0xkoiner
 /// @notice Liquidation of undercollateralized positions
 abstract contract LiquidationLogic is BorrowLogic {
     using MathLib for uint256;
@@ -19,6 +20,12 @@ abstract contract LiquidationLogic is BorrowLogic {
 
     uint256 internal constant CLOSE_FACTOR_BPS = 5000;
 
+    /// @notice Liquidate an undercollateralized position
+    /// @dev Repays debt on behalf of the user and seizes collateral with bonus
+    /// @param _collateralAsset - Address of the collateral to seize
+    /// @param _debtAsset - Address of the debt to repay
+    /// @param _user - Address of the user to liquidate
+    /// @param _debtToCover - Amount of debt the liquidator wants to cover
     function _liquidate(
         address _collateralAsset,
         address _debtAsset,
@@ -76,6 +83,9 @@ abstract contract LiquidationLogic is BorrowLogic {
         emit Liquidation(_collateralAsset, _debtAsset, _user, actualDebt, totalSeize);
     }
 
+    /// @notice Calculate the health factor for a user across all reserves
+    /// @param _user - Address of the user
+    /// @return Health factor in WAD (1e18 = liquidation threshold)
     function _calculateHealthFactor(address _user) internal view returns (uint256) {
         uint256 totalCollateralValue;
         uint256 totalBorrowValue;
